@@ -8,7 +8,7 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
 - 🔐 **JWT Authentication**: Secure token-based authentication with configurable expiration
 - 📚 **Book Management**: Full CRUD operations for book resources
 - 🔍 **Search & Filter**: Case-insensitive author search
-- 📄 **Pagination**: Configurable page size and navigation
+- 📄 **Pagination**: Optional page and limit parameters
 - 🛡️ **Error Handling**: Consistent error responses with proper HTTP status codes
 - 🚀 **Fast & Lightweight**: Built with Fiber framework for high performance
 - 🐳 **Docker Ready**: Multi-stage Dockerfile for minimal production images
@@ -19,7 +19,7 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
 
 ### Prerequisites
 
-- Go 1.25 or higher
+- Go 1.21 or higher
 - Docker (optional, for containerized deployment)
 
 ### Local Development
@@ -90,8 +90,9 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
 **POST /echo**
 - Description: Echo back the request body
 - Authentication: None
-- Request Body: Any valid JSON
+- Request Body: Any valid JSON (required, non-empty)
 - Response: `200 OK` with the same JSON body
+- Error: `400 Bad Request` for empty body
 
 Example:
 ```bash
@@ -127,7 +128,7 @@ curl -X POST http://localhost:8080/auth/token \
   -d '{"username": "testuser", "password": "testpass"}'
 ```
 
-#### Level 3-4: Book Management
+#### Level 3-4: Book Management (Public)
 
 **POST /books**
 - Description: Create a new book
@@ -177,30 +178,27 @@ curl -X POST http://localhost:8080/auth/token \
 - Authentication: **Required** (Bearer token)
 - Query Parameters:
   - `author` (optional): Filter by author name (case-insensitive)
-  - `page` (optional, default: 1): Page number
-  - `limit` (optional, default: 10): Items per page
-- Response: `200 OK`
+  - `page` (optional): Page number (must be >= 1)
+  - `limit` (optional): Items per page (must be >= 1)
+- Response: `200 OK` - Returns array of books
   ```json
-  {
-    "data": [
-      {
-        "id": "uuid",
-        "title": "Book Title",
-        "author": "Author Name",
-        "year": 2023
-      }
-    ],
-    "page": 1,
-    "limit": 10,
-    "total_items": 25,
-    "total_pages": 3
-  }
+  [
+    {
+      "id": "uuid",
+      "title": "Book Title",
+      "author": "Author Name",
+      "year": 2023
+    }
+  ]
   ```
+- Error: `400 Bad Request` for invalid pagination parameters (page < 1 or limit < 1)
 - Error: `401 Unauthorized` if token is missing or invalid
+
+**Note**: When no pagination parameters are provided, all books are returned. When pagination is provided, the response is a slice of the filtered results.
 
 Example:
 ```bash
-# List all books
+# List all books (no pagination)
 curl http://localhost:8080/books \
   -H "Authorization: Bearer YOUR_TOKEN"
 
@@ -210,6 +208,10 @@ curl "http://localhost:8080/books?author=Alan%20Donovan" \
 
 # With pagination
 curl "http://localhost:8080/books?page=2&limit=5" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Search with pagination
+curl "http://localhost:8080/books?author=John%20Doe&page=1&limit=10" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -224,7 +226,7 @@ All errors follow a consistent format:
 ```
 
 HTTP Status Codes:
-- `400 Bad Request`: Invalid input or validation error
+- `400 Bad Request`: Invalid input, validation error, or invalid pagination parameters
 - `401 Unauthorized`: Missing or invalid authentication token
 - `404 Not Found`: Resource not found
 - `500 Internal Server Error`: Unexpected server error
@@ -336,6 +338,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions and alternative pla
 ├── middleware/
 │   ├── auth.go            # JWT authentication middleware
 │   ├── recovery.go        # Panic recovery middleware
+│   ├── logger.go          # Request logging middleware
 │   └── *_test.go          # Middleware tests
 ├── models/
 │   └── book.go            # Data models

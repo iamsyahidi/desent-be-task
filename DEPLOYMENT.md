@@ -245,21 +245,31 @@ Expected: `200 OK` with `{"token":"eyJhbGc..."}`
 curl https://your-service-name.up.railway.app/books \
   -H "Authorization: Bearer {token}"
 ```
-Expected: `200 OK` with paginated book list
+Expected: `200 OK` with array of books:
+```json
+[
+  {
+    "id": "uuid",
+    "title": "The Go Programming Language",
+    "author": "Alan Donovan",
+    "year": 2015
+  }
+]
+```
 
 ### 7. Search Books by Author (Level 6)
 ```bash
 curl "https://your-service-name.up.railway.app/books?author=Alan%20Donovan" \
   -H "Authorization: Bearer {token}"
 ```
-Expected: `200 OK` with filtered results
+Expected: `200 OK` with filtered array of books
 
 ### 8. Pagination (Level 6)
 ```bash
 curl "https://your-service-name.up.railway.app/books?page=1&limit=5" \
   -H "Authorization: Bearer {token}"
 ```
-Expected: `200 OK` with pagination metadata
+Expected: `200 OK` with array of up to 5 books
 
 ### 9. Update Book (Level 4)
 ```bash
@@ -288,6 +298,15 @@ curl https://your-service-name.up.railway.app/books/non-existent-id
 curl -X POST https://your-service-name.up.railway.app/books \
   -H "Content-Type: application/json" \
   -d '{"title":"Missing required fields"}'
+
+# Test 400 - Invalid pagination
+curl "https://your-service-name.up.railway.app/books?page=0&limit=10" \
+  -H "Authorization: Bearer {token}"
+
+# Test 400 - Empty echo body
+curl -X POST https://your-service-name.up.railway.app/echo \
+  -H "Content-Type: application/json" \
+  -d ''
 
 # Test 401 - Missing auth token
 curl https://your-service-name.up.railway.app/books
