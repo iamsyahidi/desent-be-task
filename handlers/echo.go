@@ -16,5 +16,10 @@ func EchoHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
+	// If body is nil (empty JSON), return empty object
+	if body == nil {
+		body = make(map[string]any)
+	}
+
 	return c.JSON(body)
 }
