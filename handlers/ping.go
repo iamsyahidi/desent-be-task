@@ -5,7 +5,7 @@ import (
 )
 
 // PingHandler handles GET /ping requests
-// Returns JSON {"status": "ok"} with HTTP 200
+// Returns JSON {"success": true} with HTTP 200
 func PingHandler(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{"status": "ok"})
+	return c.JSON(fiber.Map{"success": true})
 }
