@@ -41,26 +41,9 @@ func (h *AuthHandler) GenerateToken(c *fiber.Ctx) error {
 		})
 	}
 
-	// Simple validation for MVP - check that credentials are not empty
-	if creds.Username == "" || creds.Password == "" {
-		log.Printf("[AUTH] Invalid credentials: empty username or password for user '%s'", creds.Username)
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "invalid credentials",
-		})
-	}
-
-	// For MVP, accept any non-empty username/password combination
-	// In production, this would validate against a user database
-	// Simple check: password must be at least 4 characters
-	if len(creds.Password) < 4 {
-		log.Printf("[AUTH] Invalid credentials: password too short for user '%s'", creds.Username)
-		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-			Error: "invalid credentials",
-		})
-	}
-
-	if creds.Username != "admin" && creds.Password != "password" {
-		log.Printf("[AUTH] Invalid credentials: incorrect password for user '%s'", creds.Username)
+	// Validate credentials - only accept admin/password
+	if creds.Username != "admin" || creds.Password != "password" {
+		log.Printf("[AUTH] Invalid credentials for user '%s'", creds.Username)
 		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
 			Error: "invalid credentials",
 		})
