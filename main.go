@@ -24,6 +24,9 @@ func main() {
 	// Add recovery middleware to handle panics
 	app.Use(middleware.RecoveryMiddleware())
 
+	// Add request logging middleware
+	app.Use(middleware.LoggerMiddleware())
+
 	// Initialize repository
 	bookRepo := repository.NewMemoryBookRepository()
 
