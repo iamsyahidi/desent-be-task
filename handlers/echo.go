@@ -3,6 +3,8 @@ package handlers
 import (
 	"log"
 
+	"personal/desent-be-task/models"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,6 +15,7 @@ func EchoHandler(c *fiber.Ctx) error {
 	body := c.Body()
 	if len(body) == 0 {
 		log.Printf("[ECHO] Received empty body")
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "empty body"})
 	}
 	log.Printf("[ECHO] Echoing %d bytes", len(body))
 	// Return the raw body as-is to preserve exact JSON formatting and key order

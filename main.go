@@ -54,7 +54,7 @@ func setupRoutes(app *fiber.App, bookHandler *handlers.BookHandler, authHandler 
 	// Level 1: Ping endpoint (health check)
 	app.Get("/ping", handlers.PingHandler)
 
-	// Level 2: Echo endpoint
+	// Level 2: Echo endpoint (returns 400 for empty body)
 	app.Post("/echo", handlers.EchoHandler)
 
 	// Level 5: Auth endpoint
@@ -62,13 +62,14 @@ func setupRoutes(app *fiber.App, bookHandler *handlers.BookHandler, authHandler 
 
 	// Level 3-4: Public book endpoints (CRUD operations)
 	app.Post("/books", bookHandler.Create)
-	// app.Get("/books", bookHandler.List)
 	app.Get("/books/:id", bookHandler.GetByID)
 	app.Put("/books/:id", bookHandler.Update)
 	app.Delete("/books/:id", bookHandler.Delete)
 
 	// Level 5-6: Protected book list endpoint (requires authentication)
-	// This endpoint supports search by author and pagination
+	// Supports optional search by author (?author=Name)
+	// Supports optional pagination (?page=1&limit=10)
+	// Returns array of books (filtered and/or paginated)
 	app.Get("/books", middleware.AuthMiddleware(authService), bookHandler.List)
 }
 
