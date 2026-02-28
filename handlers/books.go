@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"strconv"
 
 	"personal/desent-be-task/models"
@@ -30,23 +31,28 @@ func (h *BookHandler) Create(c *fiber.Ctx) error {
 	var book models.Book
 
 	if err := c.BodyParser(&book); err != nil {
+		log.Printf("[BOOKS] Failed to parse request body: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
 	// Validate required fields
 	if book.Title == "" || book.Author == "" || book.Year == 0 {
+		log.Printf("[BOOKS] Create validation failed: missing required fields")
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "missing required fields"})
 	}
 
 	// Validate year range
 	if book.Year < 1000 || book.Year > 9999 {
+		log.Printf("[BOOKS] Create validation failed: invalid year %d", book.Year)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "year must be between 1000 and 9999"})
 	}
 
 	if err := h.service.CreateBook(&book); err != nil {
+		log.Printf("[BOOKS] Failed to create book: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
+	log.Printf("[BOOKS] Book created successfully: ID=%s, Title='%s'", book.ID, book.Title)
 	return c.Status(fiber.StatusCreated).JSON(book)
 }
 
@@ -58,8 +64,10 @@ func (h *BookHandler) GetByID(c *fiber.Ctx) error {
 	book, err := h.service.GetBookByID(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrBookNotFound) {
+			log.Printf("[BOOKS] Book not found: ID=%s", id)
 			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "book not found"})
 		}
+		log.Printf("[BOOKS] Failed to get book by ID=%s: %v", id, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
@@ -79,11 +87,13 @@ func (h *BookHandler) List(c *fiber.Ctx) error {
 
 	// Validate pagination parameters
 	if page < 1 || limit < 1 {
+		log.Printf("[BOOKS] Invalid pagination parameters: page=%d, limit=%d", page, limit)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "invalid pagination parameters"})
 	}
 
 	result, err := h.service.GetBooks(author, page, limit)
 	if err != nil {
+		log.Printf("[BOOKS] Failed to list books (author='%s', page=%d, limit=%d): %v", author, page, limit, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
@@ -99,26 +109,32 @@ func (h *BookHandler) Update(c *fiber.Ctx) error {
 
 	var book models.Book
 	if err := c.BodyParser(&book); err != nil {
+		log.Printf("[BOOKS] Failed to parse update request body for ID=%s: %v", id, err)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
 	// Validate required fields
 	if book.Title == "" || book.Author == "" || book.Year == 0 {
+		log.Printf("[BOOKS] Update validation failed for ID=%s: missing required fields", id)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "missing required fields"})
 	}
 
 	// Validate year range
 	if book.Year < 1000 || book.Year > 9999 {
+		log.Printf("[BOOKS] Update validation failed for ID=%s: invalid year %d", id, book.Year)
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "year must be between 1000 and 9999"})
 	}
 
 	if err := h.service.UpdateBook(id, &book); err != nil {
 		if errors.Is(err, repository.ErrBookNotFound) {
+			log.Printf("[BOOKS] Update failed: book not found ID=%s", id)
 			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "book not found"})
 		}
+		log.Printf("[BOOKS] Failed to update book ID=%s: %v", id, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
+	log.Printf("[BOOKS] Book updated successfully: ID=%s", id)
 	return c.JSON(book)
 }
 
@@ -130,11 +146,14 @@ func (h *BookHandler) Delete(c *fiber.Ctx) error {
 
 	if err := h.service.DeleteBook(id); err != nil {
 		if errors.Is(err, repository.ErrBookNotFound) {
+			log.Printf("[BOOKS] Delete failed: book not found ID=%s", id)
 			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "book not found"})
 		}
+		log.Printf("[BOOKS] Failed to delete book ID=%s: %v", id, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
 	}
 
+	log.Printf("[BOOKS] Book deleted successfully: ID=%s", id)
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
