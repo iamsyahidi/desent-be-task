@@ -77,41 +77,49 @@ func (h *BookHandler) GetByID(c *fiber.Ctx) error {
 // List handles GET /books requests
 // Supports author query parameter for filtering
 // Supports page and limit query parameters for pagination
-// Returns paginated list of books when pagination params are provided, otherwise returns array
+// Returns array of books (filtered and/or paginated)
 func (h *BookHandler) List(c *fiber.Ctx) error {
 	author := c.Query("author")
+
+	// Get all books (optionally filtered by author)
+	books, err := h.service.GetAllBooks(author)
+	if err != nil {
+		log.Printf("[BOOKS] Failed to list books (author='%s'): %v", author, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
+	}
 
 	// Check if pagination parameters are provided
 	pageStr := c.Query("page")
 	limitStr := c.Query("limit")
 
-	// If no pagination parameters, return simple array (Level 3 compatibility)
-	if pageStr == "" && limitStr == "" {
-		books, err := h.service.GetAllBooks(author)
-		if err != nil {
-			log.Printf("[BOOKS] Failed to list books (author='%s'): %v", author, err)
-			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
+	// If pagination parameters provided, apply pagination
+	if pageStr != "" || limitStr != "" {
+		page := parseIntQuery(c, "page", 1)
+		limit := parseIntQuery(c, "limit", 10)
+
+		// Validate pagination parameters
+		if page < 1 || limit < 1 {
+			log.Printf("[BOOKS] Invalid pagination parameters: page=%d, limit=%d", page, limit)
+			return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "invalid pagination parameters"})
 		}
-		return c.JSON(books)
+
+		// Apply pagination
+		start := (page - 1) * limit
+		end := start + limit
+
+		// Handle out of bounds
+		if start >= len(books) {
+			return c.JSON([]*models.Book{})
+		}
+		if end > len(books) {
+			end = len(books)
+		}
+
+		return c.JSON(books[start:end])
 	}
 
-	// Parse pagination parameters with defaults
-	page := parseIntQuery(c, "page", 1)
-	limit := parseIntQuery(c, "limit", 10)
-
-	// Validate pagination parameters
-	if page < 1 || limit < 1 {
-		log.Printf("[BOOKS] Invalid pagination parameters: page=%d, limit=%d", page, limit)
-		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "invalid pagination parameters"})
-	}
-
-	result, err := h.service.GetBooks(author, page, limit)
-	if err != nil {
-		log.Printf("[BOOKS] Failed to list books (author='%s', page=%d, limit=%d): %v", author, page, limit, err)
-		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
-	}
-
-	return c.JSON(result)
+	// No pagination, return all books
+	return c.JSON(books)
 }
 
 // Update handles PUT /books/:id requests
