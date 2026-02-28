@@ -19,7 +19,7 @@ The application requires the following environment variables:
 All platforms should configure health checks using:
 
 - **Endpoint**: `GET /ping`
-- **Expected Response**: `200 OK` with `{"status":"ok"}`
+- **Expected Response**: `200 OK` with `{"success":true}`
 - **Interval**: 30 seconds
 - **Timeout**: 5 seconds
 - **Failure Threshold**: 3 consecutive failures
@@ -83,7 +83,7 @@ Once deployed, test with:
 curl https://your-service-name.up.railway.app/ping
 ```
 
-Expected response: `{"status":"ok"}`
+Expected response: `{"success":true}`
 
 ## Alternative Platforms
 
@@ -199,7 +199,7 @@ Once deployed to Railway, test your API using these curl commands (replace `your
 ```bash
 curl https://your-service-name.up.railway.app/ping
 ```
-Expected: `{"status":"ok"}`
+Expected: `{"success":true}`
 
 ### 2. Echo Test (Level 2)
 ```bash
