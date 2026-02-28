@@ -50,7 +50,7 @@ func (r *MemoryBookRepository) FindAll() ([]*models.Book, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	books := make([]*models.Book, 0, len(r.books))
+	books := make([]*models.Book, 0)
 	for _, book := range r.books {
 		books = append(books, book)
 	}

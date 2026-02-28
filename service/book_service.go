@@ -58,6 +58,14 @@ func (s *BookService) DeleteBook(id string) error {
 	return s.repo.Delete(id)
 }
 
+// GetAllBooks retrieves all books with optional author filtering (no pagination)
+func (s *BookService) GetAllBooks(author string) ([]*models.Book, error) {
+	if author != "" {
+		return s.repo.FindByAuthor(author)
+	}
+	return s.repo.FindAll()
+}
+
 // paginate applies pagination to a slice of books
 func paginate(books []*models.Book, page, limit int) *models.PaginatedResponse {
 	totalItems := len(books)
