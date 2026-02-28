@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"personal/desent-be-task/models"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -10,16 +8,7 @@ import (
 // Accepts JSON body and returns the same JSON in the response
 // Returns HTTP 400 for empty or invalid body
 func EchoHandler(c *fiber.Ctx) error {
-	var body map[string]any
-
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: err.Error()})
-	}
-
-	// If body is nil (empty JSON), return empty object
-	if body == nil {
-		body = make(map[string]any)
-	}
-
-	return c.JSON(body)
+	// Return the raw body as-is to preserve exact JSON formatting and key order
+	c.Set("Content-Type", "application/json")
+	return c.Send(c.Body())
 }
