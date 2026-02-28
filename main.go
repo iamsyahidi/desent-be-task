@@ -62,7 +62,7 @@ func setupRoutes(app *fiber.App, bookHandler *handlers.BookHandler, authHandler 
 
 	// Level 3-4: Public book endpoints (CRUD operations)
 	app.Post("/books", bookHandler.Create)
-	app.Get("/books", bookHandler.List)
+	// app.Get("/books", bookHandler.List)
 	app.Get("/books/:id", bookHandler.GetByID)
 	app.Put("/books/:id", bookHandler.Update)
 	app.Delete("/books/:id", bookHandler.Delete)
