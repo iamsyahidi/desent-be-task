@@ -51,7 +51,7 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
    ```bash
    curl http://localhost:8080/ping
    ```
-   Expected response: `{"status":"ok"}`
+   Expected response: `{"success":true}`
 
 ### Using Docker
 
@@ -82,7 +82,7 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
 - Authentication: None
 - Response: `200 OK`
   ```json
-  {"status": "ok"}
+  {"success": true}
   ```
 
 #### Level 2: Echo
