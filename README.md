@@ -71,7 +71,7 @@ A lightweight, production-ready REST API service built with Go and Fiber, featur
 
 ### Base URL
 - Local: `http://localhost:8080`
-- Production (Render): `https://your-service-name.onrender.com`
+- Production (Railway): `https://your-service-name.up.railway.app`
 
 ### Endpoints
 
@@ -297,25 +297,28 @@ export JWT_EXPIRATION=24h
 
 ## Deployment
 
-### Quick Deploy to Render (Free Tier - Recommended)
+### Quick Deploy to Railway (Free - No Credit Card Required)
 
-The easiest way to deploy this API is using Render's free tier:
+The easiest way to deploy this API is using Railway's free tier:
 
 1. **Push your code to GitHub**
-2. **Sign up at [Render](https://render.com)**
-3. **Create a new Web Service**:
-   - Connect your GitHub repository
-   - Select Docker environment
-   - Choose Free instance type
+2. **Sign up at [Railway](https://railway.app)** with GitHub (no credit card needed)
+3. **Create a new project**:
+   - Click "New Project"
+   - Select "Deploy from GitHub repo"
+   - Choose your repository
+   - Railway auto-detects the Dockerfile
 4. **Set environment variable**:
-   ```
-   JWT_SECRET=your-secure-random-32-char-secret
-   ```
-5. **Deploy** - Your API will be live at `https://your-service-name.onrender.com`
+   - Go to Variables tab
+   - Add: `JWT_SECRET=your-secure-random-32-char-secret`
+5. **Generate domain**:
+   - Go to Settings → Networking
+   - Click "Generate Domain"
+   - Your API will be live at `https://your-service-name.up.railway.app`
 
-**Note**: Free tier spins down after 15 minutes of inactivity. First request after spin-down takes ~30 seconds.
+**Free Tier**: $5 credit/month (~500 hours runtime), no cold starts, no credit card required!
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions and alternative platforms (Railway, Fly.io, Docker).
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions and alternative platforms (Render, Fly.io, Docker).
 
 ## Project Structure
 

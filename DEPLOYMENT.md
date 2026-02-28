@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide provides instructions for deploying the Go REST API Service to Render (recommended free tier) and other cloud platforms.
+This guide provides instructions for deploying the Go REST API Service to Railway (recommended - no credit card required) and other cloud platforms.
 
 ## Environment Variables
 
@@ -24,93 +24,88 @@ All platforms should configure health checks using:
 - **Timeout**: 5 seconds
 - **Failure Threshold**: 3 consecutive failures
 
-## Recommended: Deploy to Render (Free Tier)
+## Recommended: Deploy to Railway (Free Tier - No Credit Card Required)
 
-Render offers a generous free tier perfect for this API service. Follow these steps:
+Railway offers $5 free credit per month with no credit card required - perfect for this API service.
 
 ### Prerequisites
 - GitHub account
-- Render account (sign up at https://render.com)
+- Railway account (sign up at https://railway.app)
 - Your code pushed to a GitHub repository
 
 ### Deployment Steps
 
-1. **Sign up/Login to Render**:
-   - Go to https://render.com
-   - Sign up or login with your GitHub account
+1. **Sign up/Login to Railway**:
+   - Go to https://railway.app
+   - Click "Login with GitHub"
+   - Authorize Railway to access your GitHub account
+   - **No credit card required!**
 
-2. **Create a new Web Service**:
-   - Click "New +" button in the dashboard
-   - Select "Web Service"
-   - Connect your GitHub repository
-   - Grant Render access to your repository
+2. **Create a new project**:
+   - Click "New Project" in the Railway dashboard
+   - Select "Deploy from GitHub repo"
+   - Choose your repository from the list
+   - Railway will automatically detect the Dockerfile
 
-3. **Configure the service**:
-   - **Name**: Choose a unique name (e.g., `my-go-api`)
-   - **Region**: Choose closest to your users (e.g., Oregon, Frankfurt)
-   - **Branch**: `main` (or your default branch)
-   - **Root Directory**: Leave empty (unless your code is in a subdirectory)
-   - **Environment**: Docker
-   - **Instance Type**: Free
-
-4. **Set environment variables**:
-   - Click "Advanced" or go to "Environment" tab
-   - Add the following variables:
+3. **Configure environment variables**:
+   - After deployment starts, click on your service
+   - Go to the "Variables" tab
+   - Click "New Variable" and add:
      ```
      JWT_SECRET=your-secure-random-secret-key-min-32-chars
      JWT_EXPIRATION=24h
      ```
    - **Important**: Generate a strong JWT_SECRET (you can use: `openssl rand -base64 32`)
 
-5. **Configure health check** (optional but recommended):
-   - Health Check Path: `/ping`
-   - This helps Render monitor your service
-
-6. **Deploy**:
-   - Click "Create Web Service"
-   - Render will automatically build and deploy your Docker container
-   - First deployment takes 2-5 minutes
-
-7. **Get your public URL**:
-   - Your service will be available at: `https://your-service-name.onrender.com`
+4. **Get your public URL**:
+   - Go to the "Settings" tab
+   - Scroll to "Networking" section
+   - Click "Generate Domain"
+   - Your service will be available at: `https://your-service-name.up.railway.app`
    - Copy this URL for testing
 
-### Free Tier Limitations
-- Service spins down after 15 minutes of inactivity
-- First request after spin-down takes ~30 seconds (cold start)
-- 750 hours/month of runtime (sufficient for most use cases)
+5. **Monitor deployment**:
+   - Go to "Deployments" tab to see build progress
+   - First deployment takes 2-5 minutes
+   - Check logs if there are any issues
+
+### Free Tier Details
+- **$5 free credit per month** (no credit card required)
+- Approximately **500 hours of runtime** per month
+- Service stays active (no cold starts like Render)
 - Automatic HTTPS included
+- Custom domains supported
 
 ### Testing Your Deployment
 
 Once deployed, test with:
 ```bash
-curl https://your-service-name.onrender.com/ping
+curl https://your-service-name.up.railway.app/ping
 ```
 
 Expected response: `{"status":"ok"}`
 
 ## Alternative Platforms
 
-### Railway
+### Render
 
-1. **Create a new project** in Railway
-2. **Deploy from GitHub**:
-   - Connect your GitHub repository
-   - Railway will auto-detect the Dockerfile
-3. **Configure environment variables**:
-   - Go to your service settings
-   - Add variables:
-     ```
-     JWT_SECRET=your-secure-random-secret-key-here
-     JWT_EXPIRATION=24h
-     ```
-4. **Configure health check** (optional):
-   - Railway automatically monitors your service
-   - Health check endpoint: `/ping`
-5. **Deploy**: Railway will automatically deploy on push
+**Note**: Render now requires a credit card for new accounts.
 
-The service will be available at: `https://your-service-name.up.railway.app`
+1. **Create a new Web Service** in your Render dashboard
+2. **Connect your GitHub repository**
+3. **Configure the service**:
+   - **Environment**: Docker
+   - **Instance Type**: Free
+4. **Set environment variables**:
+   ```
+   JWT_SECRET=your-secure-random-secret-key-here
+   JWT_EXPIRATION=24h
+   ```
+5. **Deploy**: Click "Create Web Service"
+
+The service will be available at: `https://your-service-name.onrender.com`
+
+**Free Tier**: Service spins down after 15 minutes of inactivity (cold starts ~30 seconds)
 
 ### Fly.io
 
@@ -198,17 +193,17 @@ docker rm api-service
 
 ## Testing Your Deployment
 
-Once deployed to Render, test your API using these curl commands (replace `your-service-name.onrender.com` with your actual Render URL):
+Once deployed to Railway, test your API using these curl commands (replace `your-service-name.up.railway.app` with your actual Railway URL):
 
 ### 1. Health Check (Level 1)
 ```bash
-curl https://your-service-name.onrender.com/ping
+curl https://your-service-name.up.railway.app/ping
 ```
 Expected: `{"status":"ok"}`
 
 ### 2. Echo Test (Level 2)
 ```bash
-curl -X POST https://your-service-name.onrender.com/echo \
+curl -X POST https://your-service-name.up.railway.app/echo \
   -H "Content-Type: application/json" \
   -d '{"message":"hello world"}'
 ```
@@ -216,7 +211,7 @@ Expected: `{"message":"hello world"}`
 
 ### 3. Create a Book (Level 3)
 ```bash
-curl -X POST https://your-service-name.onrender.com/books \
+curl -X POST https://your-service-name.up.railway.app/books \
   -H "Content-Type: application/json" \
   -d '{
     "title": "The Go Programming Language",
@@ -229,13 +224,13 @@ Expected: `201 Created` with book data including generated ID
 ### 4. Get Book by ID (Level 4)
 ```bash
 # Replace {book-id} with the ID from step 3
-curl https://your-service-name.onrender.com/books/{book-id}
+curl https://your-service-name.up.railway.app/books/{book-id}
 ```
 Expected: `200 OK` with book data
 
 ### 5. Generate Auth Token (Level 5)
 ```bash
-curl -X POST https://your-service-name.onrender.com/auth/token \
+curl -X POST https://your-service-name.up.railway.app/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -247,28 +242,28 @@ Expected: `200 OK` with `{"token":"eyJhbGc..."}`
 ### 6. List Books with Auth (Level 5)
 ```bash
 # Replace {token} with the token from step 5
-curl https://your-service-name.onrender.com/books \
+curl https://your-service-name.up.railway.app/books \
   -H "Authorization: Bearer {token}"
 ```
 Expected: `200 OK` with paginated book list
 
 ### 7. Search Books by Author (Level 6)
 ```bash
-curl "https://your-service-name.onrender.com/books?author=Alan%20Donovan" \
+curl "https://your-service-name.up.railway.app/books?author=Alan%20Donovan" \
   -H "Authorization: Bearer {token}"
 ```
 Expected: `200 OK` with filtered results
 
 ### 8. Pagination (Level 6)
 ```bash
-curl "https://your-service-name.onrender.com/books?page=1&limit=5" \
+curl "https://your-service-name.up.railway.app/books?page=1&limit=5" \
   -H "Authorization: Bearer {token}"
 ```
 Expected: `200 OK` with pagination metadata
 
 ### 9. Update Book (Level 4)
 ```bash
-curl -X PUT https://your-service-name.onrender.com/books/{book-id} \
+curl -X PUT https://your-service-name.up.railway.app/books/{book-id} \
   -H "Content-Type: application/json" \
   -d '{
     "title": "The Go Programming Language (Updated)",
@@ -280,22 +275,22 @@ Expected: `200 OK` with updated book data
 
 ### 10. Delete Book (Level 4)
 ```bash
-curl -X DELETE https://your-service-name.onrender.com/books/{book-id}
+curl -X DELETE https://your-service-name.up.railway.app/books/{book-id}
 ```
 Expected: `204 No Content`
 
 ### 11. Error Handling (Level 7)
 ```bash
 # Test 404 - Non-existent book
-curl https://your-service-name.onrender.com/books/non-existent-id
+curl https://your-service-name.up.railway.app/books/non-existent-id
 
 # Test 400 - Invalid book data
-curl -X POST https://your-service-name.onrender.com/books \
+curl -X POST https://your-service-name.up.railway.app/books \
   -H "Content-Type: application/json" \
   -d '{"title":"Missing required fields"}'
 
 # Test 401 - Missing auth token
-curl https://your-service-name.onrender.com/books
+curl https://your-service-name.up.railway.app/books
 ```
 
 ## Monitoring and Logs
