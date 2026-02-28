@@ -59,13 +59,14 @@ func setupRoutes(app *fiber.App, bookHandler *handlers.BookHandler, authHandler 
 
 	// Level 3-4: Public book endpoints (CRUD operations)
 	app.Post("/books", bookHandler.Create)
+	app.Get("/books", bookHandler.List)
 	app.Get("/books/:id", bookHandler.GetByID)
 	app.Put("/books/:id", bookHandler.Update)
 	app.Delete("/books/:id", bookHandler.Delete)
 
 	// Level 5-6: Protected book list endpoint (requires authentication)
 	// This endpoint supports search by author and pagination
-	app.Get("/books", middleware.AuthMiddleware(authService), bookHandler.List)
+	// app.Get("/books", middleware.AuthMiddleware(authService), bookHandler.List)
 }
 
 // customErrorHandler handles errors returned by handlers
