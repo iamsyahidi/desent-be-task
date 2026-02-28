@@ -139,6 +139,9 @@ func (h *BookHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "year must be between 1000 and 9999"})
 	}
 
+	// Set the ID before updating
+	book.ID = id
+
 	if err := h.service.UpdateBook(id, &book); err != nil {
 		if errors.Is(err, repository.ErrBookNotFound) {
 			log.Printf("[BOOKS] Update failed: book not found ID=%s", id)
