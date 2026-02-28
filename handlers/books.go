@@ -77,9 +77,23 @@ func (h *BookHandler) GetByID(c *fiber.Ctx) error {
 // List handles GET /books requests
 // Supports author query parameter for filtering
 // Supports page and limit query parameters for pagination
-// Returns paginated list of books
+// Returns paginated list of books when pagination params are provided, otherwise returns array
 func (h *BookHandler) List(c *fiber.Ctx) error {
 	author := c.Query("author")
+
+	// Check if pagination parameters are provided
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+
+	// If no pagination parameters, return simple array (Level 3 compatibility)
+	if pageStr == "" && limitStr == "" {
+		books, err := h.service.GetAllBooks(author)
+		if err != nil {
+			log.Printf("[BOOKS] Failed to list books (author='%s'): %v", author, err)
+			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: err.Error()})
+		}
+		return c.JSON(books)
+	}
 
 	// Parse pagination parameters with defaults
 	page := parseIntQuery(c, "page", 1)
