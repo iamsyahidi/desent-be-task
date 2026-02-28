@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"strings"
 
 	"personal/desent-be-task/models"
@@ -9,39 +10,46 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// AuthMiddleware creates a middleware that validates JWT tokens
-// Extracts Bearer token from Authorization header and validates it
-// Returns 401 if token is missing, invalid, or expired
+// AuthMiddleware validates JWT tokens in the Authorization header
 func AuthMiddleware(authService *service.AuthService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Extract Authorization header
+		// Get Authorization header
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
+			log.Printf("[AUTH] Missing Authorization header")
 			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
 				Error: "missing authorization header",
 			})
 		}
 
-		// Extract token from "Bearer <token>" format
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-		// Check if Bearer prefix was present
-		if tokenString == authHeader {
+		// Check Bearer prefix
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			log.Printf("[AUTH] Invalid Authorization header format")
 			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
 				Error: "invalid authorization header format",
 			})
 		}
 
-		// Validate token using AuthService
-		token, err := authService.ValidateToken(tokenString)
-		if err != nil {
+		// Extract token
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		if token == "" {
+			log.Printf("[AUTH] Empty token")
 			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
-				Error: "invalid or expired token",
+				Error: "empty token",
+			})
+		}
+
+		// Validate token
+		claims, err := authService.ValidateToken(token)
+		if err != nil {
+			log.Printf("[AUTH] Invalid token: %v", err)
+			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
+				Error: "invalid token",
 			})
 		}
 
 		// Check if token is valid
-		if !token.Valid {
+		if !claims.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
 				Error: "invalid or expired token",
 			})
