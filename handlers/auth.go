@@ -59,6 +59,13 @@ func (h *AuthHandler) GenerateToken(c *fiber.Ctx) error {
 		})
 	}
 
+	if creds.Username != "admin" && creds.Password != "password" {
+		log.Printf("[AUTH] Invalid credentials: incorrect password for user '%s'", creds.Username)
+		return c.Status(fiber.StatusUnauthorized).JSON(models.ErrorResponse{
+			Error: "invalid credentials",
+		})
+	}
+
 	// Generate JWT token
 	token, err := h.authService.GenerateToken(creds.Username)
 	if err != nil {
